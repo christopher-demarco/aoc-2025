@@ -17,7 +17,7 @@ func main() {
 	lines := strings.Split(string(dat), "\n")
 
 	start := 50
-	zero := 0
+	wraps := 0
 	for _, line := range lines {
 		if len(line) == 0 {
 			continue
@@ -30,16 +30,29 @@ func main() {
 		var loc int
 		switch dir {
 		case 'L':
-			loc = (start - amt) % 100
+			// For left rotation, count how many times dial points at 0
+			// We visit start-1, start-2, ..., start-amt (mod 100)
+			// Count k in [1, amt] where (start - k) ≡ 0 (mod 100), i.e., k ≡ start (mod 100)
+			total := start - amt
+			loc = total % 100
+			if loc < 0 {
+				loc += 100
+			}
+			if start == 0 {
+				wraps += amt / 100
+			} else if amt >= start {
+				wraps += (amt-start)/100 + 1
+			}
 		case 'R':
-			loc = (start + amt) % 100
+			// For right rotation, count wraps going forward
+			total := start + amt
+			loc = total % 100
+			// Count wraps: integer division gives number of times we passed 0
+			wraps += total / 100
 		default:
 			panic("invalid direction")
 		}
-		if loc == 0 {
-			zero += 1
-		}
 		start = loc
 	}
-	fmt.Println(zero)
+	fmt.Println(wraps)
 }
